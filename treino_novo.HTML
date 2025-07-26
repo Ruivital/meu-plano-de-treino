@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plano de Treino Flexível - Fitness Factory</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <meta name="theme-color" content="#1a1a1a"/>
+    <style>
+        :root {
+            --background-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #555;
+            --button-hover-color: #45a049;
+            --border-color: #333;
+            --card-background: #2a2a2a;
+            --done-color: #28a745;
+            --error-color: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--button-hover-color);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .treino {
+            display: none;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--background-color);
+        }
+
+        .treino h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+
+        .exercicio {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .exercicio:hover {
+            background-color: #3a3a3a;
+        }
+
+        .exercicio h3 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-size: 1.3em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exercicio .detalhes {
+            display: none;
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .detalhes p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .detalhes img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .detalhes a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .detalhes a:hover {
+            text-decoration: underline;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .input-group label {
+            white-space: nowrap;
+        }
+
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background-color: #444;
+            color: var(--text-color);
+            width: 80px;
+        }
+
+        .input-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .exercicio.feito {
+            background-color: var(--done-color);
+            color: white;
+        }
+
+        .exercicio.feito h3, .exercicio.feito p, .exercicio.feito label {
+            color: white;
+        }
+
+        .exercicio.feito .detalhes a {
+            color: #ccffcc;
+        }
+
+        .finalizar-btn, .export-btn, .history-btn, .notification-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 20px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .finalizar-btn:hover, .export-btn:hover, .history-btn:hover, .notification-btn:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        #history-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.7);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #history-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+
+        .history-item {
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .history-item strong {
+            color: var(--primary-color);
+        }
+
+        .history-item ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 5px;
+        }
+
+        .history-item ul li {
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                font-size: 1.5em;
+            }
+            main {
+                margin: 10px;
+                padding: 15px;
+            }
+            .btn {
+                padding: 10px 15px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>Plano de Treino Flexível</header>
+    <main>
+        <div class="button-container">
+            <button class="btn" onclick="mostrar('treinoA')">Treino A</button>
+            <button class="btn" onclick="mostrar('treinoB')">Treino B</button>
+            <button class="btn" onclick="mostrar('treinoC')">Treino C</button>
+            <button class="btn" onclick="mostrar('treinoD')">Treino D</button>
+        </div>
+
+        <div id="treinoA" class="treino">
+            <h2>💪 Treino A – Peito, Tríceps, Core + Cardio</h2>
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Passadeira (marcha inclinada) <span class="reps">15 min</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Inicie com uma inclinação de 4% a 6% e mantenha uma velocidade entre 5–6 km/h. Mantenha a postura ereta, evitando agarrar-se aos apoios da máquina para maximizar o aquecimento e o envolvimento dos músculos.</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Treadmill_usage.jpg/800px-Treadmill_usage.jpg" alt="Passadeira">
+                    <p><a href="https://www.youtube.com/watch?v=k_j1Nq2jW0c" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso:</strong> Não aplicável, é o aquecimento.</p>
+                    <div class="input-group">
+                        <label for="passadeira_carga">Carga (Velocidade/Inclinação):</label>
+                        <input type="text" id="passadeira_carga" value="5km/h, 5%" placeholder="Ex: 5km/h, 5%">
+                        <label for="passadeira_feito">Feito:</label>
+                        <input type="checkbox" id="passadeira_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Supino reto com halteres <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Deite-se num banco plano, segurando um haltere em cada mão. Mantenha os pés firmemente no chão e as costas ligeiramente arqueadas para uma base estável. Estique os braços acima do peito, depois baixe os halteres lentamente até aos lados do peito, sem descer além da linha do tórax para proteger os ombros. Suba de forma controlada, focando na contração do peito.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/dumbbell-bench-press.jpg" alt="Supino reto com halteres">
+                    <p><a href="https://www.youtube.com/watch?v=VmB1G1K8b5w" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="supino_reto_halteres_carga">Carga (kg):</label>
+                        <input type="number" id="supino_reto_halteres_carga" placeholder="Ex: 10">
+                        <label for="supino_reto_halteres_feito">Feito:</label>
+                        <input type="checkbox" id="supino_reto_halteres_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Supino inclinado com halteres <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Execute o mesmo movimento do supino reto, mas num banco inclinado a 30°–45°. É crucial não forçar os ombros excessivamente para trás durante a descida dos halteres. Mantenha o movimento controlado e focado no peito superior.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/incline-dumbbell-press.jpg" alt="Supino inclinado com halteres">
+                    <p><a href="https://www.youtube.com/watch?v=0G2Y4C919zY" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="supino_inclinado_halteres_carga">Carga (kg):</label>
+                        <input type="number" id="supino_inclinado_halteres_carga" placeholder="Ex: 8">
+                        <label for="supino_inclinado_halteres_feito">Feito:</label>
+                        <input type="checkbox" id="supino_inclinado_halteres_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Cross-over em polia baixa <span class="reps">3x15</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Posicione as polias na posição mais baixa. Segurando as pegas com uma pega neutra (palmas das mãos viradas uma para a outra), execute o movimento como se estivesse a abraçar alguém, unindo as mãos à frente do peito. Mantenha os cotovelos ligeiramente dobrados e controle o retorno do movimento para evitar sobrecarregar os ombros.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/cable-crossover.jpg" alt="Cross-over em polia baixa">
+                    <p><a href="https://www.youtube.com/watch?v=QxX9-w3lC-A" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 45 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="crossover_polia_baixa_carga">Carga (kg):</label>
+                        <input type="number" id="crossover_polia_baixa_carga" placeholder="Ex: 5">
+                        <label for="crossover_polia_baixa_feito">Feito:</label>
+                        <input type="checkbox" id="crossover_polia_baixa_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Tríceps no puxador com corda <span class="reps">3x15</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Fique de pé, com as costas direitas e os cotovelos fixos junto ao tronco. Puxe a corda para baixo até esticar completamente os braços, focando na contração do tríceps. Solte devagar até formar um ângulo de 90° nos cotovelos e repita o movimento.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/triceps-rope-pushdown.jpg" alt="Tríceps no puxador com corda">
+                    <p><a href="https://www.youtube.com/watch?v=Fj-0q5GgB24" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 45 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="triceps_puxador_corda_carga">Carga (kg):</label>
+                        <input type="number" id="triceps_puxador_corda_carga" placeholder="Ex: 10">
+                        <label for="triceps_puxador_corda_feito">Feito:</label>
+                        <input type="checkbox" id="triceps_puxador_corda_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Tríceps testa com halteres leves <span class="reps">2x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se num banco ligeiramente inclinado. Segure um haltere leve em cada mão (ou um único haltere com as duas mãos). Estique os braços acima da cabeça, depois baixe os halteres atrás da cabeça, mantendo os cotovelos apontados para cima. Estenda os braços novamente até à posição inicial. Realize o movimento de forma lenta e controlada, focando na extensão suave e evitando movimentos bruscos.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/dumbbell-overhead-triceps-extension.jpg" alt="Tríceps testa com halteres leves">
+                    <p><a href="https://www.youtube.com/watch?v=sIu9I8Fh63c" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="triceps_testa_halteres_carga">Carga (kg):</label>
+                        <input type="number" id="triceps_testa_halteres_carga" placeholder="Ex: 6">
+                        <label for="triceps_testa_halteres_feito">Feito:</label>
+                        <input type="checkbox" id="triceps_testa_halteres_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Prancha frontal <span class="reps">3x30 seg</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Apoie os antebraços e as pontas dos pés no chão. Mantenha o corpo reto, como uma tábua, desde a cabeça até os calcanhares. Não deixe a bacia cair (para baixo) nem subir (para cima). Contraia bem o abdómen e os glúteos para manter a estabilidade.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/plank.jpg" alt="Prancha frontal">
+                    <p><a href="https://www.youtube.com/watch?v=T_e4Q4aHkBA" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 30 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="prancha_frontal_carga">Carga (segundos):</label>
+                        <input type="text" id="prancha_frontal_carga" value="30 seg" placeholder="Ex: 30 seg">
+                        <label for="prancha_frontal_feito">Feito:</label>
+                        <input type="checkbox" id="prancha_frontal_feito">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="treinoB" class="treino">
+            <h2>💪 Treino B – Costas, Bíceps, Core + Cardio</h2>
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Remo (cardio) <span class="reps">10-12 min</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Utilize a máquina de remo com um ritmo moderado. Comece por empurrar com as pernas, só depois puxe com os braços. Mantenha as costas direitas e evite deitar-se demasiado para trás. O movimento deve ser fluido e controlado, priorizando a força das pernas e core.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/rowing-machine.jpg" alt="Remo">
+                    <p><a href="https://www.youtube.com/watch?v=A3sP-h98cXs" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso:</strong> Não aplicável, é o aquecimento.</p>
+                    <div class="input-group">
+                        <label for="remo_carga">Carga (Nível):</label>
+                        <input type="text" id="remo_carga" value="Nível 5" placeholder="Ex: Nível 5">
+                        <label for="remo_feito">Feito:</label>
+                        <input type="checkbox" id="remo_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Puxada frente (pegada neutra) <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se na máquina com as mãos numa posição neutra (palmas viradas uma para a outra). Puxe a barra até ao queixo ou peito, mantendo os cotovelos a apontar para baixo. Suba a barra lentamente, sem balançar o tronco, focando na contração das costas (grande dorsal).</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/lat-pulldown.jpg" alt="Puxada frente (pegada neutra)">
+                    <p><a href="https://www.youtube.com/watch?v=yYmI-aXkP3Q" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="puxada_frente_carga">Carga (kg):</label>
+                        <input type="number" id="puxada_frente_carga" placeholder="Ex: 30">
+                        <label for="puxada_frente_feito">Feito:</label>
+                        <input type="checkbox" id="puxada_frente_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Remada baixa com triângulo <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se na máquina de remada baixa com as costas direitas. Puxe o punho em triângulo até ao umbigo, mantendo os cotovelos juntos ao corpo. Retorne à posição inicial devagar, controlando o movimento e esticando bem as costas sem arredondar a lombar.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/seated-cable-row.jpg" alt="Remada baixa com triângulo">
+                    <p><a href="https://www.youtube.com/watch?v=0hY4j717v2k" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="remada_baixa_carga">Carga (kg):</label>
+                        <input type="number" id="remada_baixa_carga" placeholder="Ex: 25">
+                        <label for="remada_baixa_feito">Feito:</label>
+                        <input type="checkbox" id="remada_baixa_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Remada unilateral com haltere no banco <span class="reps">3x12 por lado</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Apoie um joelho e a mão oposta num banco plano. Com a outra mão, puxe o haltere do chão até ao lado do peito, mantendo o cotovelo rente ao corpo. Evite rodar o tronco e foque na contração da parte superior das costas. Realize para ambos os lados.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/dumbbell-row.jpg" alt="Remada unilateral com haltere no banco">
+                    <p><a href="https://www.youtube.com/watch?v=roW9lq-gq40" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="remada_unilateral_carga">Carga (kg):</label>
+                        <input type="number" id="remada_unilateral_carga" placeholder="Ex: 8">
+                        <label for="remada_unilateral_feito">Feito:</label>
+                        <input type="checkbox" id="remada_unilateral_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Bíceps alternado com halteres leves <span class="reps">3x15</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Fique de pé, com os halteres ao lado do corpo, palmas viradas para a frente. Suba um haltere de cada vez até ao ombro, rodando a palma da mão para cima à medida que sobe. Não balance o corpo; o movimento deve ser controlado e focado no bíceps.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/alternating-dumbbell-curl.jpg" alt="Bíceps alternado com halteres leves">
+                    <p><a href="https://www.youtube.com/watch?v=y2sI6jJd25s" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 45 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="biceps_alternado_carga">Carga (kg):</label>
+                        <input type="number" id="biceps_alternado_carga" placeholder="Ex: 5">
+                        <label for="biceps_alternado_feito">Feito:</label>
+                        <input type="checkbox" id="biceps_alternado_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Bíceps banco inclinado <span class="reps">2x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se num banco inclinado com um haltere em cada mão, braços esticados para baixo. Suba os halteres de forma controlada, focando na contração do bíceps. Deixe os braços descerem completamente na fase negativa e nunca balance os pesos para ajudar no movimento.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/incline-dumbbell-curl.jpg" alt="Bíceps banco inclinado">
+                    <p><a href="https://www.youtube.com/watch?v=F2YmF_XoP-M" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="biceps_banco_inclinado_carga">Carga (kg):</label>
+                        <input type="number" id="biceps_banco_inclinado_carga" placeholder="Ex: 4">
+                        <label for="biceps_banco_inclinado_feito">Feito:</label>
+                        <input type="checkbox" id="biceps_banco_inclinado_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Prancha lateral (direita/esquerda) <span class="reps">2x30 seg por lado</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Apoie o antebraço no chão e mantenha o corpo reto e alinhado de lado. Levante a bacia e segure a posição, certificando-se de que o ombro está alinhado com o cotovelo. Se necessário, pode apoiar os joelhos no chão para facilitar. Troque de lado após o tempo indicado.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/side-plank.jpg" alt="Prancha lateral">
+                    <p><a href="https://www.youtube.com/watch?v=gJ9iYjD_NqE" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 30 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="prancha_lateral_carga">Carga (segundos):</label>
+                        <input type="text" id="prancha_lateral_carga" value="30 seg" placeholder="Ex: 30 seg">
+                        <label for="prancha_lateral_feito">Feito:</label>
+                        <input type="checkbox" id="prancha_lateral_feito">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="treinoC" class="treino">
+            <h2>💪 Treino C – Pernas, Ombros (com cuidado), Core + Cardio</h2>
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Elíptica <span class="reps">12–15 min</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Utilize a máquina elíptica com um movimento fluido e suave, sem impacto nos joelhos. Concentre-se na respiração e mantenha um ritmo constante para um aquecimento eficaz e queima de calorias.</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Woman_on_cross-trainer.jpg/800px-Woman_on_cross-trainer.jpg" alt="Elíptica">
+                    <p><a href="https://www.youtube.com/watch?v=t-q5xJ9i68U" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso:</strong> Não aplicável, é o aquecimento.</p>
+                    <div class="input-group">
+                        <label for="eliptica_carga">Carga (Nível):</label>
+                        <input type="text" id="eliptica_carga" value="Nível 6" placeholder="Ex: Nível 6">
+                        <label for="eliptica_feito">Feito:</label>
+                        <input type="checkbox" id="eliptica_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Agachamento com peso corporal <span class="reps">3x15</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Posicione os pés à largura dos ombros. Desça como se fosse sentar numa cadeira, garantindo que os joelhos não ultrapassam a linha dos pés. Mantenha as costas direitas e o peito para cima. Pode usar um haltere leve ao peito para evoluir, mas comece sem barra para aperfeiçoar a técnica.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/bodyweight-squat.jpg" alt="Agachamento com peso corporal">
+                    <p><a href="https://www.youtube.com/watch?v=ultWtk1Nl8g" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="agachamento_peso_corporal_carga">Carga (kg):</label>
+                        <input type="text" id="agachamento_peso_corporal_carga" value="Peso Corporal" placeholder="Ex: Peso Corporal">
+                        <label for="agachamento_peso_corporal_feito">Feito:</label>
+                        <input type="checkbox" id="agachamento_peso_corporal_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Leg Press (45º) <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se na máquina com os pés afastados na plataforma. Empurre a plataforma sem estender totalmente os joelhos no final do movimento para proteger a articulação. Desça até formar um ângulo de 90º nos joelhos. Mantenha o movimento lento e controlado.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/leg-press.jpg" alt="Leg Press (45º)">
+                    <p><a href="https://www.youtube.com/watch?v=W45N-4K20m8" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="leg_press_carga">Carga (kg):</label>
+                        <input type="number" id="leg_press_carga" placeholder="Ex: 50">
+                        <label for="leg_press_feito">Feito:</label>
+                        <input type="checkbox" id="leg_press_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Extensora (quadríceps) <span class="reps">3x15</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se na máquina e ajuste o rolo na altura dos tornozelos. Estique as pernas até quase trancar os joelhos (sem forçar a hiperextensão). Retorne à posição inicial devagar, controlando o movimento, focando na contração do quadríceps.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/leg-extension.jpg" alt="Extensora (quadríceps)">
+                    <p><a href="https://www.youtube.com/watch?v=YyvMnX2L56c" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 45 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="extensora_carga">Carga (kg):</label>
+                        <input type="number" id="extensora_carga" placeholder="Ex: 20">
+                        <label for="extensora_feito">Feito:</label>
+                        <input type="checkbox" id="extensora_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Flexora (posterior da coxa) <span class="reps">3x15</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Pode ser feito sentado ou deitado, dependendo da máquina disponível. Puxe o rolo para trás até formar um ângulo de 90º com controlo. Sinta a contração nos isquiotibiais (parte de trás da coxa) e retorne à posição inicial de forma lenta e controlada.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/leg-curl.jpg" alt="Flexora (posterior da coxa)">
+                    <p><a href="https://www.youtube.com/watch?v=F4L1vQdK9oY" target="_blank">Ver vídeo (exemplo Matrix)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 45 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="flexora_carga">Carga (kg):</label>
+                        <input type="number" id="flexora_carga" placeholder="Ex: 15">
+                        <label for="flexora_feito">Feito:</label>
+                        <input type="checkbox" id="flexora_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Ombros: Press com halteres sentado <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Sente-se com um banco de costas retas, segurando um haltere leve em cada mão à altura dos ombros, palmas viradas para a frente. Suba os halteres até esticar os braços sem forçar a articulação. Desça de forma controlada. Evite usar barra para proteger os ombros, usando halteres leves com controlo total.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/seated-dumbbell-shoulder-press.jpg" alt="Press ombro com halteres sentado">
+                    <p><a href="https://www.youtube.com/watch?v=qEwKCR5JCms" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="press_ombro_halteres_carga">Carga (kg):</label>
+                        <input type="number" id="press_ombro_halteres_carga" placeholder="Ex: 6">
+                        <label for="press_ombro_halteres_feito">Feito:</label>
+                        <input type="checkbox" id="press_ombro_halteres_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Elevações laterais com halteres leves <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Em pé, com um haltere leve em cada mão e os braços ligeiramente dobrados. Suba os halteres lateralmente até à altura dos ombros, mantendo um movimento controlado. Evite encolher os ombros ou usar o impulso do corpo. Foque-se nos deltoides laterais.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/dumbbell-lateral-raises.jpg" alt="Elevações laterais com halteres leves">
+                    <p><a href="https://www.youtube.com/watch?v=3VcKaXfVDFI" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="elevacoes_laterais_carga">Carga (kg):</label>
+                        <input type="number" id="elevacoes_laterais_carga" placeholder="Ex: 3">
+                        <label for="elevacoes_laterais_feito">Feito:</label>
+                        <input type="checkbox" id="elevacoes_laterais_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Abdominais bicicleta <span class="reps">3x20</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Deite-se de costas, mãos atrás da cabeça, pernas elevadas e joelhos dobrados. Traga o cotovelo direito em direção ao joelho esquerdo, enquanto estende a perna direita. Alterne os lados, simulando o movimento de pedalar numa bicicleta. Mantenha o movimento controlado, sem stress na cervical.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/bicycle-crunches.jpg" alt="Abdominais bicicleta">
+                    <p><a href="https://www.youtube.com/watch?v=9FGilxCbdz8" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 30 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="abdominais_bicicleta_carga">Carga (reps):</label>
+                        <input type="text" id="abdominais_bicicleta_carga" value="20" placeholder="Ex: 20">
+                        <label for="abdominais_bicicleta_feito">Feito:</label>
+                        <input type="checkbox" id="abdominais_bicicleta_feito">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="treinoD" class="treino">
+            <h2>💪 Treino D (Extra) – Funcional leve + Core + Mobilidade</h2>
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Bicicleta estática ou caminhada rápida <span class="reps">10 min</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Utilize uma bicicleta estática ou faça uma caminhada rápida na passadeira. Mantenha um ritmo moderado para aquecer o corpo e aumentar a frequência cardíaca de forma suave, preparando-se para os exercícios funcionais.</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Stationary_bicycle_at_gym.jpg/800px-Stationary_bicycle_at_gym.jpg" alt="Bicicleta estática">
+                    <p><a href="https://www.youtube.com/watch?v=F01y5m21zQY" target="_blank">Ver vídeo (exemplo bicicleta)</a></p>
+                    <p><strong>Descanso:</strong> Não aplicável, é o aquecimento.</p>
+                    <div class="input-group">
+                        <label for="bicicleta_estatica_carga">Carga (Nível/Velocidade):</label>
+                        <input type="text" id="bicicleta_estatica_carga" value="Nível 7" placeholder="Ex: Nível 7">
+                        <label for="bicicleta_estatica_feito">Feito:</label>
+                        <input type="checkbox" id="bicicleta_estatica_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Agachamento + Press com halteres leves <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Segure halteres leves em cada mão. Realize um agachamento e, ao subir, estique os halteres acima da cabeça em um movimento de press. Este exercício combina trabalho de pernas e ombros de forma funcional, melhorando a coordenação e a força global. Mantenha o movimento fluido e controlado.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/dumbbell-thruster.jpg" alt="Agachamento + Press com halteres leves">
+                    <p><a href="https://www.youtube.com/watch?v=Y-0hK6c1XgM" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="agachamento_press_carga">Carga (kg):</label>
+                        <input type="number" id="agachamento_press_carga" placeholder="Ex: 4">
+                        <label for="agachamento_press_feito">Feito:</label>
+                        <input type="checkbox" id="agachamento_press_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Peso morto com kettlebell leve <span class="reps">3x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Fique de pé com os pés à largura dos ombros e um kettlebell leve entre os pés. Dobre a anca, mantendo as costas retas e o peito para cima, descendo o kettlebell em direção ao chão. Sinta o alongamento nos glúteos e isquiotibiais. Suba contraindo os glúteos e estendendo a anca. O foco está na técnica correta para ativar o glúteo e a lombar de forma segura.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/kettlebell-deadlift.jpg" alt="Peso morto com kettlebell leve">
+                    <p><a href="https://www.youtube.com/watch?v=F0I6t46522k" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 60 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="peso_morto_kettlebell_carga">Carga (kg):</label>
+                        <input type="number" id="peso_morto_kettlebell_carga" placeholder="Ex: 8">
+                        <label for="peso_morto_kettlebell_feito">Feito:</label>
+                        <input type="checkbox" id="peso_morto_kettlebell_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Bird Dog (equilíbrio e core) <span class="reps">3x10 por lado</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Comece na posição de quatro apoios (mãos e joelhos no chão). Estique o braço direito para a frente e a perna esquerda para trás simultaneamente, mantendo o corpo estável e o core contraído. Mantenha a posição por um segundo e retorne. Alterne os lados. Este exercício é excelente para equilíbrio e estabilidade do core.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/bird-dog.jpg" alt="Bird Dog">
+                    <p><a href="https://www.youtube.com/watch?v=nm1_cTqL26Q" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 30 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="bird_dog_carga">Carga (reps):</label>
+                        <input type="text" id="bird_dog_carga" value="10" placeholder="Ex: 10">
+                        <label for="bird_dog_feito">Feito:</label>
+                        <input type="checkbox" id="bird_dog_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Elevações frontais com halteres <span class="reps">2x12</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Em pé, com um haltere leve em cada mão, com as palmas viradas para o corpo. Levante os halteres para a frente até à altura dos ombros, sem ultrapassar essa linha. Mantenha o movimento controlado, sem usar balanço, focando nos deltoides frontais. Este exercício é feito com carga leve para proteger os ombros.</p>
+                    <img src="https://www.muscleandstrength.com/sites/default/files/dumbbell-front-raises.jpg" alt="Elevações frontais com halteres">
+                    <p><a href="https://www.youtube.com/watch?v=J_jQ7V7c93A" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso entre séries:</strong> 45 segundos</p>
+                    <p><strong>Descanso entre exercícios:</strong> 60-90 segundos</p>
+                    <div class="input-group">
+                        <label for="elevacoes_frontais_carga">Carga (kg):</label>
+                        <input type="number" id="elevacoes_frontais_carga" placeholder="Ex: 2">
+                        <label for="elevacoes_frontais_feito">Feito:</label>
+                        <input type="checkbox" id="elevacoes_frontais_feito">
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercicio" onclick="toggleDetalhes(this)">
+                <h3>Alongamentos + respiração <span class="reps">5–10 min</span></h3>
+                <div class="detalhes">
+                    <p><strong>Instruções:</strong> Termine o treino com 5 a 10 minutos de alongamentos suaves, focando nas costas, ombros e parte posterior da coxa. Mantenha cada alongamento por 20-30 segundos, respirando profundamente. Isso ajuda na recuperação muscular e na prevenção de lesões, especialmente importante com histórico de tendinite.</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Hamstring_Stretch_01.jpg/800px-Hamstring_Stretch_01.jpg" alt="Alongamentos">
+                    <p><a href="https://www.youtube.com/watch?v=0hXgQ3562n8" target="_blank">Ver vídeo (exemplo)</a></p>
+                    <p><strong>Descanso:</strong> Não aplicável.</p>
+                    <div class="input-group">
+                        <label for="alongamentos_carga">Carga (Tempo):</label>
+                        <input type="text" id="alongamentos_carga" value="5-10 min" placeholder="Ex: 5-10 min">
+                        <label for="alongamentos_feito">Feito:</label>
+                        <input type="checkbox" id="alongamentos_feito">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="finalizar-btn" onclick="finalizarTreino()">Finalizar Treino e Guardar</button>
+        <button class="history-btn" onclick="openHistoryModal()">Ver Histórico</button>
+        <button class="export-btn" onclick="exportToCsv()">Exportar Dados CSV</button>
+        <button class="notification-btn" onclick="requestNotificationPermission()">Ativar Notificações</button>
+    </main>
+
+    <div id="history-modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeHistoryModal()">&times;</span>
+            <h2>Histórico de Treino</h2>
+            <div id="history-list">
+                </div>
+        </div>
+    </div>
+
+    <audio id="beep-sound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" preload="auto"></audio>
+
+    <script>
+        // Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Registo do ServiceWorker falhou:', error);
+                    });
+            });
+        }
+        
+        const beepSound = document.getElementById('beep-sound');
+        let currentTimer = null;
+
+        function mostrar(id) {
+            const treino = document.getElementById(id);
+            if (!treino) {
+                console.error('Elemento com id ' + id + ' não encontrado.');
+                return;
+            }
+            const treinos = document.querySelectorAll('.treino');
+            treinos.forEach(t => {
+                t.style.display = 'none';
+            });
+            treino.style.display = 'block';
+            loadExerciseStates(id); // Carrega os estados para o treino visível
+        }
+
+        function toggleDetalhes(el) {
+            const detalhes = el.querySelector('.detalhes');
+            const exercicioElement = el; // O elemento clicado é o próprio exercício
+
+            if (detalhes.style.display === 'block') {
+                detalhes.style.display = 'none';
+            } else {
+                detalhes.style.display = 'block';
+                // Define um temporizador para o som de descanso se o descanso entre séries for especificado
+                const descansoText = detalhes.querySelector('p:nth-of-type(3)'); // Assume que o 3º p é o descanso
+                if (descansoText && descansoText.textContent.includes('Descanso entre séries:')) {
+                    const descansoValue = parseInt(descansoText.textContent.match(/\d+/)[0]);
+                    if (!isNaN(descansoValue) && descansoValue > 0) {
+                        if (currentTimer) clearTimeout(currentTimer); // Limpa timer anterior
+                        currentTimer = setTimeout(() => {
+                            beepSound.play();
+                            alert('Descanso terminado! Próxima série ou exercício.');
+                        }, descansoValue * 1000);
+                    }
+                }
+            }
+        }
+
+        // Mostrar treino A automaticamente quando a página carrega
+        window.addEventListener('DOMContentLoaded', () => {
+            mostrar('treinoA');
+            // Inicializar estados dos exercícios para todos os treinos ao carregar
+            document.querySelectorAll('.treino').forEach(treinoDiv => {
+                const treinoId = treinoDiv.id;
+                loadExerciseStates(treinoId);
+            });
+        });
+
+        // Adicionar event listeners para inputs de carga e checkboxes
+        document.querySelectorAll('.exercicio input[type="number"], .exercicio input[type="text"], .exercicio input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', (event) => {
+                event.stopPropagation(); // Previne que o clique no input feche os detalhes
+                const exercicioElement = input.closest('.exercicio');
+                const treinoId = exercicioElement.closest('.treino').id;
+                saveExerciseState(treinoId, exercicioElement);
+                updateDoneClass(exercicioElement);
+            });
+            input.addEventListener('click', (event) => {
+                event.stopPropagation(); // Previne que o clique no input feche os detalhes
+            });
+        });
+
+        // Validação de inputs de carga
+        document.querySelectorAll('.exercicio input[type="number"]').forEach(input => {
+            input.addEventListener('input', (event) => {
+                event.target.value = event.target.value.replace(/[^0-9.]/g, ''); // Permite apenas números e um ponto
+            });
+        });
+
+        function saveExerciseState(treinoId, exercicioElement) {
+            const id = exercicioElement.querySelector('h3').textContent.split('<span')[0].trim();
+            const cargaInput = exercicioElement.querySelector('input[type="number"]') || exercicioElement.querySelector('input[type="text"]');
+            const feitoCheckbox = exercicioElement.querySelector('input[type="checkbox"]');
+
+            const state = {
+                carga: cargaInput ? cargaInput.value : '',
+                feito: feitoCheckbox ? feitoCheckbox.checked : false
+            };
+
+            let treinoStates = JSON.parse(localStorage.getItem('treinoStates')) || {};
+            if (!treinoStates[treinoId]) {
+                treinoStates[treinoId] = {};
+            }
+            treinoStates[treinoId][id] = state;
+            localStorage.setItem('treinoStates', JSON.stringify(treinoStates));
+        }
+
+        function loadExerciseStates(treinoId) {
+            const treinoStates = JSON.parse(localStorage.getItem('treinoStates')) || {};
+            const currentTreinoStates = treinoStates[treinoId] || {};
+
+            document.querySelectorAll(`#${treinoId} .exercicio`).forEach(exercicioElement => {
+                const id = exercicioElement.querySelector('h3').textContent.split('<span')[0].trim();
+                const cargaInput = exercicioElement.querySelector('input[type="number"]') || exercicioElement.querySelector('input[type="text"]');
+                const feitoCheckbox = exercicioElement.querySelector('input[type="checkbox"]');
+
+                if (currentTreinoStates[id]) {
+                    if (cargaInput) cargaInput.value = currentTreinoStates[id].carga;
+                    if (feitoCheckbox) feitoCheckbox.checked = currentTreinoStates[id].feito;
+                } else {
+                    // Se não há estado salvo, redefinir para o valor padrão ou vazio
+                    if (cargaInput) {
+                        if (id === 'Passadeira (marcha inclinada)') cargaInput.value = '5km/h, 5%';
+                        else if (id === 'Remo (cardio)') cargaInput.value = 'Nível 5';
+                        else if (id === 'Elíptica') cargaInput.value = 'Nível 6';
+                        else if (id === 'Bicicleta estática ou caminhada rápida') cargaInput.value = 'Nível 7';
+                        else if (id === 'Agachamento com peso corporal') cargaInput.value = 'Peso Corporal';
+                        else if (id === 'Prancha frontal') cargaInput.value = '30 seg';
+                        else if (id === 'Prancha lateral (direita/esquerda)') cargaInput.value = '30 seg';
+                        else if (id === 'Abdominais bicicleta') cargaInput.value = '20';
+                        else if (id === 'Bird Dog (equilíbrio e core)') cargaInput.value = '10';
+                        else if (id === 'Alongamentos + respiração') cargaInput.value = '5-10 min';
+                        else cargaInput.value = '';
+                    }
+                    if (feitoCheckbox) feitoCheckbox.checked = false;
+                }
+                updateDoneClass(exercicioElement);
+            });
+        }
+
+        function updateDoneClass(exercicioElement) {
+            const feitoCheckbox = exercicioElement.querySelector('input[type="checkbox"]');
+            if (feitoCheckbox && feitoCheckbox.checked) {
+                exercicioElement.classList.add('feito');
+            } else {
+                exercicioElement.classList.remove('feito');
+            }
+        }
+
+        function finalizarTreino() {
+            const activeTreinoId = document.querySelector('.treino[style*="block"]').id;
+            const exercisesData = [];
+            document.querySelectorAll(`#${activeTreinoId} .exercicio`).forEach(exercicioElement => {
+                const name = exercicioElement.querySelector('h3').textContent.split('<span')[0].trim();
+                const cargaInput = exercicioElement.querySelector('input[type="number"]') || exercicioElement.querySelector('input[type="text"]');
+                const feitoCheckbox = exercicioElement.querySelector('input[type="checkbox"]');
+
+                exercisesData.push({
+                    name: name,
+                    carga: cargaInput ? cargaInput.value : '',
+                    feito: feitoCheckbox ? feitoCheckbox.checked : false
+                });
+            });
+
+            const history = JSON.parse(localStorage.getItem('treinoHistory')) || [];
+            history.push({
+                date: new Date().toLocaleString('pt-PT'),
+                treinoId: activeTreinoId,
+                exercises: exercisesData
+            });
+            localStorage.setItem('treinoHistory', JSON.stringify(history));
+
+            alert('Treino finalizado e guardado no histórico!');
+            resetCurrentTreino(activeTreinoId); // Limpa os campos após finalizar
+        }
+
+        function resetCurrentTreino(treinoId) {
+            document.querySelectorAll(`#${treinoId} .exercicio`).forEach(exercicioElement => {
+                const cargaInput = exercicioElement.querySelector('input[type="number"]') || exercicioElement.querySelector('input[type="text"]');
+                const feitoCheckbox = exercicioElement.querySelector('input[type="checkbox"]');
+                if (cargaInput) {
+                    const id = exercicioElement.querySelector('h3').textContent.split('<span')[0].trim();
+                    if (id === 'Passadeira (marcha inclinada)') cargaInput.value = '5km/h, 5%';
+                    else if (id === 'Remo (cardio)') cargaInput.value = 'Nível 5';
+                    else if (id === 'Elíptica') cargaInput.value = 'Nível 6';
+                    else if (id === 'Bicicleta estática ou caminhada rápida') cargaInput.value = 'Nível 7';
+                    else if (id === 'Agachamento com peso corporal') cargaInput.value = 'Peso Corporal';
+                    else if (id === 'Prancha frontal') cargaInput.value = '30 seg';
+                    else if (id === 'Prancha lateral (direita/esquerda)') cargaInput.value = '30 seg';
+                    else if (id === 'Abdominais bicicleta') cargaInput.value = '20';
+                    else if (id === 'Bird Dog (equilíbrio e core)') cargaInput.value = '10';
+                    else if (id === 'Alongamentos + respiração') cargaInput.value = '5-10 min';
+                    else cargaInput.value = '';
+                }
+                if (feitoCheckbox) feitoCheckbox.checked = false;
+                exercicioElement.classList.remove('feito');
+                const detalhes = exercicioElement.querySelector('.detalhes');
+                if (detalhes) detalhes.style.display = 'none'; // Fecha os detalhes
+            });
+
+            // Limpa o estado salvo no localStorage para o treino atual
+            let treinoStates = JSON.parse(localStorage.getItem('treinoStates')) || {};
+            delete treinoStates[treinoId];
+            localStorage.setItem('treinoStates', JSON.stringify(treinoStates));
+        }
+
+        function exportToCsv() {
+            const history = JSON.parse(localStorage.getItem('treinoHistory')) || [];
+            let csvContent = "data:text/csv;charset=utf-8,Data,Treino,Exercício,Carga,Feito\n";
+
+            history.forEach(treinoRecord => {
+                treinoRecord.exercises.forEach(exercise => {
+                    csvContent += `${treinoRecord.date},${treinoRecord.treinoId},"${exercise.name}",${exercise.carga},${exercise.feito ? 'Sim' : 'Não'}\n`;
+                });
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "historico_treino.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert('Histórico exportado para historico_treino.csv!');
+        }
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("Este navegador não suporta notificações.");
+            } else if (Notification.permission === "granted") {
+                sendHydrationNotification();
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        sendHydrationNotification();
+                    }
+                });
+            }
+        }
+
+        function sendHydrationNotification() {
+            setTimeout(() => {
+                new Notification("Lembrete de Treino", {
+                    body: "Hora de beber água ou fazer uma pausa de descanso! 💧",
+                    icon: "icon-192x192.png" // Ícone para a notificação
+                });
+            }, 60 * 60 * 1000); // 60 minutos
+            alert('Notificação de hidratação/descanso agendada para daqui a 60 minutos.');
+        }
+
+        function openHistoryModal() {
+            const modal = document.getElementById('history-modal');
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = ''; // Limpa antes de carregar
+
+            const history = JSON.parse(localStorage.getItem('treinoHistory')) || [];
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<p>Nenhum treino registado ainda.</p>';
+                modal.style.display = 'flex'; // Usar flex para centralizar
+                return;
+            }
+
+            history.forEach(record => {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('history-item');
+                itemDiv.innerHTML = `
+                    <p><strong>Data:</strong> ${record.date}</p>
+                    <p><strong>Treino:</strong> ${record.treinoId.toUpperCase().replace('TREINO', 'Treino ')}</p>
+                    <ul>
+                        ${record.exercises.map(ex => `
+                            <li>
+                                <span>${ex.name}: Carga ${ex.carga || 'N/A'}</span>
+                                <span style="color: ${ex.feito ? 'var(--primary-color)' : 'var(--error-color)'};">${ex.feito ? 'Feito ✅' : 'Não Feito ❌'}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+                historyList.appendChild(itemDiv);
+            });
+
+            modal.style.display = 'flex'; // Usar flex para centralizar
+        }
+
+        function closeHistoryModal() {
+            const modal = document.getElementById('history-modal');
+            modal.style.display = 'none';
+        }
+
+        // Fechar modal ao clicar fora do conteúdo
+        window.onclick = function(event) {
+            const modal = document.getElementById('history-modal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+    <script>
+        // Criar manifest.json dinamicamente para PWA
+        const manifest = {
+            "name": "Plano de Treino",
+            "short_name": "Treino",
+            "description": "Aplicação de plano de treino flexível e intuitivo.",
+            "start_url": "./index.html",
+            "display": "standalone",
+            "background_color": "#1a1a1a",
+            "theme_color": "#4CAF50",
+            "icons": [
+                {
+                    "src": "icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icon-512x512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type : 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        document.querySelector('link[rel="manifest"]').setAttribute('href', manifestUrl);
+
+        // Criar service-worker.js dinamicamente
+        const serviceWorkerCode = `
+            const CACHE_NAME = 'treino-app-cache-v1';
+            const urlsToCache = [
+                './',
+                './index.html',
+                './icon-192x192.png',
+                './icon-512x512.png',
+                'https://www.soundjay.com/buttons/sounds/beep-07.mp3'
+            ];
+
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            console.log('Cache aberta');
+                            return cache.addAll(urlsToCache);
+                        })
+                );
+            });
+
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => {
+                            if (response) {
+                                return response;
+                            }
+                            return fetch(event.request);
+                        })
+                );
+            });
+
+            self.addEventListener('activate', event => {
+                const cacheWhitelist = [CACHE_NAME];
+                event.waitUntil(
+                    caches.keys().then(cacheNames => {
+                        return Promise.all(
+                            cacheNames.map(cacheName => {
+                                if (cacheWhitelist.indexOf(cacheName) === -1) {
+                                    return caches.delete(cacheName);
+                                }
+                            })
+                        );
+                    })
+                );
+            });
+        `;
+        const swBlob = new Blob([serviceWorkerCode], {type : 'application/javascript'});
+        const swUrl = URL.createObjectURL(swBlob);
+        // O registro do ServiceWorker já está no HTML
+        // navigator.serviceWorker.register('/service-worker.js')
+        // No entanto, para que o service worker seja acessível, ele precisa estar no root
+        // ou você precisa servir este blob como um arquivo separado no servidor.
+        // Para fins de demonstração local, esta abordagem é mais complexa.
+        // O ideal é ter os arquivos manifest.json e service-worker.js fisicamente no root do projeto.
+
+        // Para esta demonstração em um único arquivo HTML, o service worker não será instalado corretamente
+        // porque o navegador espera que ele esteja em um arquivo .js separado no root.
+        // Esta parte do código PWA é mais conceitual aqui.
+    </script>
+    <img src="icon-192x192.png" style="display:none;" alt="Placeholder icon for PWA">
+    <img src="icon-512x512.png" style="display:none;" alt="Placeholder icon for PWA">
+</body>
+</html>
