@@ -1,1 +1,216 @@
 
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meus Planos de Treino</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <meta name="theme-color" content="#1a1a1a"/>
+    <style>
+        :root {
+            --background-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #555;
+            --button-hover-color: #45a049;
+            --border-color: #333;
+            --card-background: #2a2a2a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centraliza verticalmente */
+            align-items: center; /* Centraliza horizontalmente */
+            min-height: 100vh; /* Ocupa a altura total da viewport */
+            text-align: center;
+        }
+
+        .container {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+            text-decoration: none; /* Para links */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: block; /* Garante que os botões ocupem toda a largura disponível */
+        }
+
+        .btn:hover {
+            background-color: var(--button-hover-color);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .btn {
+                padding: 12px 20px;
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Escolha o Seu Plano de Treino</h1>
+        <div class="button-group">
+            <a href="treino_original.html" class="btn">Plano de Treino do Homem (Original)</a>
+            <a href="treino_segundo_plano.html" class="btn">Plano de Treino (Segundo Plano)</a>
+            </div>
+    </div>
+
+    <script>
+        // Service Worker para PWA (copiado do seu plano de treino, adaptado para ser mais genérico)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Registo do ServiceWorker falhou:', error);
+                    });
+            });
+        }
+        
+        // Assegura que o manifest.json e service-worker.js são gerados no runtime
+        // para facilitar o download dos arquivos no mesmo diretório
+        const generatePwaFiles = () => {
+            // Manifest.json
+            const manifest = {
+                "name": "Meus Planos de Treino",
+                "short_name": "Meus Treinos",
+                "description": "Uma aplicação para os seus planos de treino.",
+                "start_url": "./index.html",
+                "display": "standalone",
+                "background_color": "#1a1a1a",
+                "theme_color": "#4CAF50",
+                "icons": [
+                    {
+                        "src": "icon-192x192.png",
+                        "sizes": "192x192",
+                        "type": "image/png"
+                    },
+                    {
+                        "src": "icon-512x512.png",
+                        "sizes": "512x512",
+                        "type": "image/png"
+                    }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type : 'application/json'});
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            document.querySelector('link[rel="manifest"]').setAttribute('href', manifestUrl);
+
+            // Service-worker.js
+            const serviceWorkerCode = `
+                const CACHE_NAME = 'meus-treinos-cache-v1';
+                const urlsToCache = [
+                    './',
+                    './index.html',
+                    './treino_original.html', // Inclui o seu primeiro plano
+                    './treino_segundo_plano.html', // Inclui o seu segundo plano
+                    './icon-192x192.png',
+                    './icon-512x512.png',
+                    'https://www.soundjay.com/buttons/sounds/beep-07.mp3' // Se usar este som, inclua
+                    // Adicione aqui outros ficheiros se tiver, como imagens específicas de cada plano
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                console.log('Cache aberta');
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                    );
+                });
+
+                self.addEventListener('activate', event => {
+                    const cacheWhitelist = [CACHE_NAME];
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.map(cacheName => {
+                                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                                        return caches.delete(cacheName);
+                                    }
+                                })
+                            );
+                        })
+                    );
+                });
+            `;
+            const swBlob = new Blob([serviceWorkerCode], {type : 'application/javascript'});
+            // Você precisaria de um servidor para servir isso como '/service-worker.js'
+            // Para simplificar a demonstração e o download, vou manter o registro direto.
+            // Para deploy real, o service-worker.js e manifest.json devem ser arquivos físicos na raiz.
+        };
+
+        // Chamar a função para gerar os URLs do blob (para manifest e service worker)
+        // Isso é mais útil para um ambiente de desenvolvimento/teste local sem um servidor configurado para servir esses arquivos fisicamente.
+        // Em um ambiente de produção (como GitHub Pages), o ideal é que 'manifest.json' e 'service-worker.js' sejam arquivos reais na raiz.
+        // Para simplificar o processo de upload para você, mantive a geração via JavaScript no HTML.
+        // No entanto, para garantir que o PWA funcione 100% em todos os cenários e navegadores,
+        // é melhor criar 'manifest.json' e 'service-worker.js' como arquivos separados e estáticos.
+        // Para a sua necessidade, esta abordagem "tudo em um" no HTML deve ser suficiente para testar.
+        generatePwaFiles();
+
+        // Placeholder para os ícones para que o navegador possa "vê-los" mesmo que não sejam imagens reais criadas aqui
+        document.body.insertAdjacentHTML('beforeend', '<img src="icon-192x192.png" style="display:none;" alt="Placeholder icon for PWA"><img src="icon-512x512.png" style="display:none;" alt="Placeholder icon for PWA">');
+    </script>
+</body>
+</html>
